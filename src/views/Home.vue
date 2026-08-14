@@ -17,7 +17,15 @@
     </button>
   </header>
 
-  <section id="home" class=" bg-amber-100">
-    
+  <section id="home" class=" bg-amber-100 h-100">
+    <div>
+        <p>Transforme Seus Dados Comerciais em Insights Estratégicos e Vendas</p>
+        <p>Deixe as planilhas manuais para trás. Analise padrões, identifique oportunidades e tome decisões inteligentes com nossa solução de Data Science para sua carteira de clientes.</p>
+    </div>
+
+    <div>
+        
+    </div>
+
   </section>
 </template>
