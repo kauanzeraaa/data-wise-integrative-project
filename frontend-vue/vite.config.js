@@ -16,19 +16,3 @@ export default defineConfig({
   
 })
 
-module.exports = {
-  theme: {
-    colors: {
-      // Configure your color palette here
-        pallete: {
-        lightYellow: '#fdf2c5',
-        midYellow: '#efe8b2',
-        lightGreen: '#c6d1a6',
-        midGreen: '#82bfa0',
-        brown: '#7a6f5d',
-        gray: '#333333',
-        chumbo: '#212121',
-      }
-    }
-  }
-}
