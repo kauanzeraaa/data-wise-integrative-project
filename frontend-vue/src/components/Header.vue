@@ -1,17 +1,44 @@
 <template>
-  <header class="flex justify-between items-center h-18 px-8 md:px-[300px]">
-    
+  <header class="flex justify-between items-center h-18 px-8 md:px-[400px]">
+
     <!-- Logo -->
     <RouterLink to="/" class="flex-shrink-0">
-      <img src="../assets/Logo/Logo-white.png" alt="Logo DataWise" class="h-10 w-auto">
+      <img src="../assets/Logo/Logo-white.png" alt="Logo DataWise" class="h-7 w-auto">
     </RouterLink>
 
     <!-- Navegação Central -->
     <nav class="hidden md:flex space-x-12 text-black font-medium">
-      <RouterLink to="/" class="hover:text-palette-mid-green transition-colors">Home</RouterLink>
-      <RouterLink to="/solutions" class="hover:text-palette-mid-green transition-colors">Soluções</RouterLink>
-      <RouterLink to="/how-works" class="hover:text-palette-mid-green transition-colors">Como Funciona</RouterLink>
-      <RouterLink to="/contact" class="hover:text-palette-mid-green transition-colors">Contato</RouterLink>
+      <RouterLink
+        to="/"
+        class="hover:text-palette-mid-green transition-colors pb-1"
+        exact-active-class="border-b-2 border-palette-mid-green"
+      >
+        Home
+      </RouterLink>
+
+      <RouterLink
+        to="/solutions"
+        class="hover:text-palette-mid-green transition-colors pb-1"
+        exact-active-class="border-b-2 border-palette-mid-green text-palette-mid-green"
+      >
+        Soluções
+      </RouterLink>
+
+      <RouterLink
+      to="/how-works"
+        class="hover:text-palette-mid-green transition-colors pb-1"
+        exact-active-class="border-b-2 border-palette-mid-green text-palette-mid-green"
+      >
+        Como Funciona
+      </RouterLink>
+
+      <RouterLink
+        to="/contact"
+        class="hover:text-palette-mid-green transition-colors pb-1"
+        exact-active-class="border-b-2 border-palette-mid-green text-palette-mid-green"
+      >
+        Contato
+      </RouterLink>
     </nav>
 
     <!-- Botão de Login -->
@@ -21,6 +48,6 @@
     >
       Acessar Sistema
     </RouterLink>
-    
+
   </header>
 </template>
