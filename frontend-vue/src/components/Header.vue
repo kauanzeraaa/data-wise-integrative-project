@@ -1,5 +1,5 @@
 <template>
-  <header class="flex justify-between items-center h-18 px-8 md:px-[400px]">
+  <header class="flex justify-between items-center h-20 px-8 md:px-[400px] bg-palette-white">
 
     <!-- Logo -->
     <RouterLink to="/" class="flex-shrink-0">
