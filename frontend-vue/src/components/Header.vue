@@ -1,5 +1,5 @@
 <template>
-  <header class="flex justify-between items-center h-20 px-8 md:px-[400px] bg-palette-white">
+  <header class="sticky top-0 flex justify-between items-center h-18 px-8 md:px-[400px] bg-[#fff] border-[#fff] shadow-[0_10px_30px_rgba(38,53,31,0.09)]">
 
     <!-- Logo -->
     <RouterLink to="/" class="flex-shrink-0">
@@ -44,7 +44,7 @@
     <!-- Botão de Login -->
     <RouterLink
       to="/login"
-      class="bg-palette-mid-green text-white font-semibold px-6 py-2.5 rounded-lg hover:bg-green-700 transition-colors duration-300 shadow-sm"
+      class="bg-palette-mid-green text-white font-semibold px-4 py-1.5 rounded-lg hover:bg-[#6ba88a] transition-colors duration-300 shadow-sm"
     >
       Acessar Sistema
     </RouterLink>
