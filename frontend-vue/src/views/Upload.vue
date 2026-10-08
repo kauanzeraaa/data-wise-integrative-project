@@ -1,111 +1,21 @@
 <script setup>
 import Header from "../components/Header.vue";
-import { computed, ref } from "vue";
-import * as XLSX from "xlsx";
-import { useUploadStore } from "../store/uploadStore.js";
+import uploadIcon from "../assets/upload_images/upload_icon.png";
+import { ref } from "vue";
+import { useUploadStore, formatarTamanho } from "../store/uploadStore.js";
 
 const upload = useUploadStore();
 const fileInput = ref(null);
 
-const formatarNumero = (valor) => {
-    const numero = Number(valor ?? 0);
-
-    if (Number.isNaN(numero)) return "-";
-
-    return new Intl.NumberFormat("pt-BR", {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-    }).format(numero);
-};
-
-const formatarData = (valor) => {
-    if (!valor) return "-";
-
-    // Se for o número serial do Excel (ex: 45672)
-    const numeroSerial = Number(valor);
-    if (!Number.isNaN(numeroSerial) && typeof valor !== "boolean" && numeroSerial > 0) {
-        // Offset de 25569 dias entre a base do Excel (30/12/1899) e a época Unix (01/01/1970)
-        const milissegundosPorDia = 86400 * 1000;
-        const dataUtc = new Date(Math.round((numeroSerial - 25569) * milissegundosPorDia));
-
-        if (!Number.isNaN(dataUtc.getTime())) {
-            const dia = String(dataUtc.getUTCDate()).padStart(2, "0");
-            const mes = String(dataUtc.getUTCMonth() + 1).padStart(2, "0");
-            const ano = dataUtc.getUTCFullYear();
-            return `${dia}/${mes}/${ano}`;
-        }
-    }
-
-    // Se já estiver no padrão DD/MM/AAAA
-    if (typeof valor === "string" && /^\d{2}\/\d{2}\/\d{4}$/.test(valor.trim())) {
-        return valor.trim();
-    }
-
-    // Se for formato ISO ou outro formato padrão reconhecido pelo Date
-    const data = new Date(valor);
-    if (!Number.isNaN(data.getTime())) {
-        return data.toLocaleDateString("pt-BR", { timeZone: "UTC" });
-    }
-
-    return String(valor);
-};
-
-const progresso = computed(() => {
-    if (!upload.arquivo) return 0;
-    if (upload.carregamento) return 70;
-    if (upload.dadosTratados.length) return 100;
-    return 20;
-});
-
 function abrirSeletor() {
-    fileInput.value?.click();
+    if (!upload.carregando) fileInput.value?.click();
 }
 
 async function aoSelecionaArquivo(event) {
     const file = event.target.files?.[0];
-    if (!file) return;
-
-    upload.selecionarArquivo(file);
-    await processarArquivo();
-}
-
-async function processarArquivo() {
-    if (!upload.arquivo) {
-        upload.erros = ["Selecione uma planilha antes de processar."];
-        return;
-    }
-
-    const nome = upload.arquivo.name.toLowerCase();
-    const valido = [".xlsx", ".xls", ".csv"].some((ext) => nome.endsWith(ext));
-
-    if (!valido) {
-        upload.erros = ["Formato inválido. Envie .xlsx, .xls ou .csv."];
-        return;
-    }
-
-    upload.carregamento = true;
-    upload.erros = [];
-
-    try {
-        const buffer = await upload.arquivo.arrayBuffer();
-        const workbook = XLSX.read(buffer, { type: "array" });
-        const planilha = workbook.Sheets[workbook.SheetNames[0]];
-        const linhas = XLSX.utils.sheet_to_json(planilha, { defval: "" });
-
-        upload.dadosOriginais = linhas;
-        upload.dadosTratados = linhas.map((linha) => ({
-            ...linha,
-            codigo_cliente: linha.codigo_cliente || linha.codigo || linha.id || "-",
-            nome_cliente: linha.nome_cliente || linha.cliente || linha.nome || "Sem nome",
-            segmento: upload.normalizarSegmento(linha.segmento),
-            nivel_cliente: String(linha.nivel_cliente || linha.nivel || "N/A")
-                .trim()
-                .toUpperCase(),
-        }));
-    } catch (error) {
-        upload.erros = ["Não foi possível ler a planilha."];
-    } finally {
-        upload.carregamento = false;
+    event.target.value = ""; // limpa o input para permitir reenviar o mesmo arquivo
+    if (file) {
+        await upload.processarPlanilha(file);
     }
 }
 </script>
@@ -113,59 +23,113 @@ async function processarArquivo() {
 <template>
     <Header />
 
-    <main class="bg-[#f8fafc] md:px-[400px]">
-        <!-- Section para importar arquivos CSV, XLSX -->
-        <section class="px-8 py-16 lg:py-24  pt-12 gap-12">
-            <input ref="fileInput" type="file" @change="aoSelecionaArquivo" />
-            <h1 class="text-4xl md:text-4xl font-extrabold text-palette-chumbo leading-tight mb-1 max-w-[650px]">Upload
-                do arquivo</h1>
-            <h2 class="text-base md:text-lg font-light text-palette-chumbo leading-tight mb-6">Arraste e solte para
-                carregar o arquivo intantaneamentearquivo</h2>
+    <main class="bg-[#f8fafc] min-h-screen md:px-[400px] pb-10">
+        <!-- Section para importar arquivos -->
+        <section class="px-8 py-16 pt-12 gap-12">
+            <input ref="fileInput" type="file" class="hidden" accept=".xlsx, .xls, .csv" @change="aoSelecionaArquivo" />
+            <h1 class="text-4xl font-extrabold text-palette-chumbo leading-tight mb-1">Upload do arquivo</h1>
+            <h2 class="text-base font-light text-palette-chumbo leading-tight mb-6">
+                Clique para carregar o arquivo instantaneamente
+            </h2>
 
-            <div class="flex justify-center items-center flex-col bg-[#ffffff] rounded-2xl border-2 border-dashed border-[#52796F] cursor-pointer   "
-                @click="abrirSeletor">
-                <img src="../assets\upload_images\upload_icon.png" alt="Imagem de Upload" class="mt-20">
-                <h2 class="font-light text-palette-chumbo">Arraste e solte para carregar o arquivo ou <span
-                        class="text-palette-mid-green font-bold underline" @click="abrirSeletor">Escolha um
-                        Arquivo</span></h2>
-                <h3 class="mb-20">Formatos aceitos: XLSX, CSV</h3>
+            <div class="flex flex-col items-center justify-center bg-white rounded-2xl border-2 border-dashed border-[#84A98C] cursor-pointer py-12"
+                :class="{ 'opacity-50 cursor-wait': upload.carregando }" @click="abrirSeletor">
+                <img :src="uploadIcon" alt="Imagem de Upload" class="mb-4">
+                <h2 class="font-light text-palette-chumbo">
+                    <span class="text-[#52796F] font-bold underline">Escolha um Arquivo</span>
+                </h2>
+                <h3 class="text-sm text-gray-500 mt-2">Formatos aceitos: XLSX, XLS, CSV</h3>
+            </div>
+            
+            <p v-if="upload.mensagemErro" class="mt-4 text-red-600 bg-red-50 p-3 rounded-lg border border-red-200">
+                {{ upload.mensagemErro }}
+            </p>
+
+            <!-- Barra de Progresso Simples (Mantida, pois faz sentido para a aba toda, ou pode ser redundante com os cards. Opcionalmente pode ser removida). -->
+            <div v-if="(upload.progresso > 0 && upload.progresso < 100) && upload.carregando" class="mt-8">
+                <div class="flex justify-between text-sm text-palette-chumbo mb-1">
+                    <span>Processando {{ upload.nomeArquivo }}...</span>
+                    <span>{{ upload.progresso }}%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div class="bg-[#84A98C] h-2.5 rounded-full transition-all duration-300" :style="{ width: upload.progresso + '%' }"></div>
+                </div>
+            </div>
+
+            <!-- Cards de Histórico de Arquivos (Baseado no Print) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8" v-if="upload.historicoArquivos.length > 0">
+                <div v-for="arq in upload.historicoArquivos" :key="arq.id" class="bg-white border border-gray-200 rounded-2xl p-4 flex items-center gap-4 shadow-sm">
+                    <!-- Ícone de Extensão -->
+                    <div class="bg-[#52796F] text-white text-[10px] font-bold rounded flex items-center justify-center w-10 h-10 uppercase">
+                        {{ arq.extensao }}
+                    </div>
+                    <!-- Informações do Arquivo -->
+                    <div class="flex-1">
+                        <p class="text-sm font-bold text-palette-chumbo">{{ arq.nome }}</p>
+                        <div class="flex items-center text-xs text-gray-500 mt-1 gap-2">
+                            <!-- Tamanho Carregado vs Total -->
+                            <span v-if="arq.status === 'Completo'">
+                                {{ formatarTamanho(arq.tamanhoBytes) }}
+                            </span>
+                            <span v-else>
+                                {{ formatarTamanho(arq.tamanhoBytes * (arq.progresso / 100)) }} de {{ formatarTamanho(arq.tamanhoBytes) }}
+                            </span>
+
+                            <!-- Status com Ícone -->
+                            <span class="flex items-center gap-1 font-semibold" :class="arq.status === 'Completo' ? 'text-green-600' : (arq.status === 'Erro' ? 'text-red-500' : 'text-gray-500')">
+                                <template v-if="arq.status === 'Carregando'">
+                                    <span class="inline-block w-3 h-3 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></span>
+                                    Carregando
+                                </template>
+                                <template v-else-if="arq.status === 'Completo'">
+                                    <span class="inline-flex items-center justify-center w-3.5 h-3.5 bg-green-500 text-white rounded-full text-[9px]">✓</span>
+                                    Completo
+                                </template>
+                                <template v-else>
+                                    Erro
+                                </template>
+                            </span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <div v-if="upload.dadosTratados.length" class=" max-w-full overflow-x-auto pb-10 ">
-            <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm mt-5">
+        <!-- Tabela Simples de Apresentação de Dados -->
+        <section v-if="upload.temDados" class="px-8">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-palette-chumbo">Dados Importados</h3>
+                <RouterLink to="/relatorio" class="bg-[#52796F] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#3f5f57]">
+                    Ver Relatório Completo
+                </RouterLink>
+            </div>
+
+            <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
                 <table class="w-full border-collapse text-left text-sm text-gray-700">
-                    <thead class="bg-[#84A98C] text-[#26351f]">
+                    <thead class="bg-[#84A98C] text-white">
                         <tr>
-                            <th class="px-4 py-3 font-semibold text-white">Código CLiente</th>
-                            <th class="px-4 py-3 font-semibold text-white">Nome</th>
-                            <th class="px-4 py-3 font-semibold text-white">Nível</th>
-                            <th class="px-4 py-3 font-semibold text-white">Cidade</th>
-                            <th class="px-4 py-3 font-semibold text-white">Data Contratação</th>
+                            <th class="px-4 py-3 font-semibold">Código</th>
+                            <th class="px-4 py-3 font-semibold">Nome</th>
+                            <th class="px-4 py-3 font-semibold">Nível</th>
+                            <th class="px-4 py-3 font-semibold">Cidade</th>
+                            <th class="px-4 py-3 font-semibold">Data Contratação</th>
                         </tr>
                     </thead>
                     <tbody>
+                        <!-- Mostra apenas os primeiros 10 registros para simplificar -->
                         <tr v-for="(cliente, index) in upload.dadosTratados.slice(0, 10)" :key="index"
-                            class="border-t border-gray-200 hover:bg-[#f9fbf6]">
+                            class="border-t border-gray-100 hover:bg-gray-50">
                             <td class="px-4 py-3">{{ cliente.codigo_cliente || '-' }}</td>
                             <td class="px-4 py-3">{{ cliente.nome_cliente || '-' }}</td>
-                            <td class="px-4 py-3">
-                                <span :class="cliente.nivel_cliente === 'A'
-                                    ? 'bg-[#edf7df] text-[#52761e]'
-                                    : cliente.nivel_cliente === 'B'
-                                        ? 'bg-[#fef3c7] text-[#9a6700]'
-                                        : 'bg-[#dbeafe] text-[#1d4ed8]'"
-                                    class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold">
-                                    {{ cliente.nivel_cliente || 'N/A' }}
-                                </span>
-                            </td>
-                            <td class="px-4 py-3">{{ cliente.cidade || cliente.localidade || '-' }}</td>
-                            <td class="px-4 py-3">{{ formatarData(cliente.data_contratacao || cliente.data) }}</td>
+                            <td class="px-4 py-3">{{ cliente.nivel_cliente || '-' }}</td>
+                            <td class="px-4 py-3">{{ cliente.cidade || '-' }}</td>
+                            <td class="px-4 py-3">{{ cliente.data_contratacao || '-' }}</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-        </div>
+            <p class="text-xs text-gray-500 mt-2 text-right">Mostrando amostra dos dados (10 linhas).</p>
+        </section>
     </main>
 </template>
 
