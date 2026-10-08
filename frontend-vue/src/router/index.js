@@ -6,6 +6,7 @@ import Contact from  '../views/Contact.vue'
 import Functionality from '../views/Functionality.vue'
 import HowWorks from  '../views/HowWorks.vue'
 import Upload from '../views/Upload.vue'
+import Relatorio from '../views/Relatorio.vue'
 
 const routes = [
     { path : '/', component: Home},
@@ -13,7 +14,8 @@ const routes = [
     { path : '/contact', component: Contact},
     { path : '/functionality', component: Functionality},
     { path : '/how-works', component: HowWorks},
-    { path : '/uploads', component: Upload}
+    { path : '/uploads', component: Upload},
+    { path : '/relatorio', component: Relatorio}
 ]
 
 const router = createRouter({
