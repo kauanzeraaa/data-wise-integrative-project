@@ -60,7 +60,7 @@ async function aoSelecionaArquivo(event) {
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8" v-if="upload.historicoArquivos.length > 0">
                 <div v-for="arq in upload.historicoArquivos" :key="arq.id" class="bg-white border border-gray-200 rounded-2xl p-4 flex items-center gap-4 shadow-sm">
                     <!-- Ícone de Extensão -->
-                    <div class="bg-[#52796F] text-white text-[10px] font-bold rounded flex items-center justify-center w-10 h-10 uppercase">
+                    <div class="bg-[#1FB35B] text-white text-[10px] font-bold rounded flex items-center justify-center w-10 h-10 uppercase">
                         {{ arq.extensao }}
                     </div>
                     <!-- Informações do Arquivo -->
@@ -89,6 +89,8 @@ async function aoSelecionaArquivo(event) {
                                     Erro
                                 </template>
                             </span>
+
+                            <span v-if="upload.dataUploadFormatada"> | Data de Upload: {{ upload.dataUploadFormatada }}</span>
                         </div>
                     </div>
                 </div>
