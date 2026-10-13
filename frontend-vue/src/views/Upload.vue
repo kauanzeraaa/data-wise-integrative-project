@@ -2,7 +2,7 @@
 import Header from "../components/Header.vue";
 import uploadIcon from "../assets/upload_images/upload_icon.png";
 import { ref } from "vue";
-import { useUploadStore, formatarTamanho } from "../store/uploadStore.js";
+import { useUploadStore, formatarTamanho, formatarDataHora } from "../store/uploadStore.js";
 
 const upload = useUploadStore();
 const fileInput = ref(null);
@@ -90,8 +90,11 @@ async function aoSelecionaArquivo(event) {
                                 </template>
                             </span>
 
-                            <span v-if="upload.dataUploadFormatada"> | Data de Upload: {{ upload.dataUploadFormatada }}</span>
+                            <span v-if="arq.dataUpload"> | Data de Upload: {{ formatarDataHora(arq.dataUpload) }}</span>
                         </div>
+                        <p v-if="arq.status === 'Erro' && arq.mensagemErro" class="text-xs text-red-500 mt-1">
+                            {{ arq.mensagemErro }}
+                        </p>
                     </div>
                 </div>
             </div>
