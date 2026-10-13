@@ -45,7 +45,7 @@ async function aoSelecionaArquivo(event) {
                 {{ upload.mensagemErro }}
             </p>
 
-            <!-- Barra de Progresso Simples (Mantida, pois faz sentido para a aba toda, ou pode ser redundante com os cards. Opcionalmente pode ser removida). -->
+            <!-- Barra de Progresso -->
             <div v-if="(upload.progresso > 0 && upload.progresso < 100) && upload.carregando" class="mt-8">
                 <div class="flex justify-between text-sm text-palette-chumbo mb-1">
                     <span>Processando {{ upload.nomeArquivo }}...</span>
@@ -56,7 +56,7 @@ async function aoSelecionaArquivo(event) {
                 </div>
             </div>
 
-            <!-- Cards de Histórico de Arquivos (Baseado no Print) -->
+            <!-- Cards de Histórico de Arquivos -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8" v-if="upload.historicoArquivos.length > 0">
                 <div v-for="arq in upload.historicoArquivos" :key="arq.id" class="bg-white border border-gray-200 rounded-2xl p-4 flex items-center gap-4 shadow-sm">
                     <!-- Ícone de Extensão -->
@@ -97,7 +97,7 @@ async function aoSelecionaArquivo(event) {
             </div>
         </section>
 
-        <!-- Tabela Simples de Apresentação de Dados -->
+        <!-- Tabela de Apresentação de Dados -->
         <section v-if="upload.temDados" class="px-8">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-bold text-palette-chumbo">Dados Importados</h3>
@@ -118,7 +118,7 @@ async function aoSelecionaArquivo(event) {
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Mostra apenas os primeiros 10 registros para simplificar -->
+                        <!-- Mostra apenas os primeiros 10 registros -->
                         <tr v-for="(cliente, index) in upload.dadosTratados.slice(0, 10)" :key="index"
                             class="border-t border-gray-100 hover:bg-gray-50">
                             <td class="px-4 py-3">{{ cliente.codigo_cliente || '-' }}</td>
