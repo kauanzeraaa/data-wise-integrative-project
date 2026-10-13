@@ -63,7 +63,7 @@ export const useUploadStore = defineStore("upload", {
             return this.totalRegistros - this.registrosComErro
         },
 
-        // Ex.: { "Campo obrigatório vazio": 3, "E-mail inválido": 1 }
+        // campo obrigatório vazio: 3, e-mail inválido: 1
         errosPorTipo: (state) => {
             const contagem = {}
             state.erros.forEach((erro) => {
@@ -100,7 +100,7 @@ export const useUploadStore = defineStore("upload", {
                 status: "Carregando",
                 progresso: 0
             })
-            // Mantém apenas os 2 últimos arquivos visualmente, como no print
+            // Mantém apenas os 2 últimos arquivos visualmente
             if (this.historicoArquivos.length > 2) {
                 this.historicoArquivos.pop()
             }
@@ -120,7 +120,7 @@ export const useUploadStore = defineStore("upload", {
             return true
         },
 
-        // Fluxo principal: valida o arquivo, lê, trata e valida os dados
+        // valida o arquivo, lê, trata e valida os dados
         async processarPlanilha(file) {
             this.selecionarArquivo(file)
             if (!this.validarArquivo()) return
@@ -154,15 +154,15 @@ export const useUploadStore = defineStore("upload", {
             }
         },
 
-        // Lê a primeira aba da planilha e transforma em lista de objetos
+        // le a primeira aba da planilha e transforma em lista de objetos
         async lerPlanilha() {
             const buffer = await this.arquivo.arrayBuffer()
-            // dateNF: datas do Excel viram texto DD/MM/AAAA | raw: CSV é lido como texto puro
+            // datas do excel viram texto DD/MM/AAAA (dateNF), CSV é lido como texto normal (raw: true)
             const workbook = XLSX.read(buffer, { type: "array", dateNF: "dd/mm/yyyy", raw: true })
             const planilha = workbook.Sheets[workbook.SheetNames[0]]
             const linhas = XLSX.utils.sheet_to_json(planilha, { defval: "", raw: false })
 
-            // Padroniza os nomes das colunas: "Código Cliente" -> "codigo_cliente"
+            // Padroniza os nomes das colunas: "Código Cliente" - "codigo_cliente"
             return linhas.map((linha) => {
                 const nova = {}
                 Object.keys(linha).forEach((coluna) => {
@@ -213,34 +213,34 @@ export const useUploadStore = defineStore("upload", {
                 const valorOriginal = String(original[campo.chave] ?? "")
                 const valor = tratado[campo.chave]
 
-                // 1. Campo obrigatório vazio
+                // campo obrigatório vazio
                 if (campo.obrigatorio && valor === "") {
                     this.registrarErro(linha, campo.rotulo, "Campo obrigatório vazio", `O campo ${campo.rotulo} não foi preenchido.`)
                     return
                 }
 
-                // 2. Espaços em branco desnecessários
+                // espaços em branco desnecessários
                 if (valorOriginal !== "" && valorOriginal !== valorOriginal.trim().replace(/\s+/g, " ")) {
                     this.registrarErro(linha, campo.rotulo, "Espaços desnecessários", `"${valorOriginal}" possui espaços extras.`)
                 }
             })
 
-            // 3. E-mail inválido
+            // e-mail inválido
             if (tratado.email && !REGEX_EMAIL.test(tratado.email)) {
                 this.registrarErro(linha, "E-mail", "E-mail inválido", `"${tratado.email}" não é um e-mail válido.`)
             }
 
-            // 4. Dado fora do padrão: nível deve ser A, B ou C
+            // dado fora do padrão: nível deve ser A, B ou C
             if (tratado.nivel_cliente && !NIVEIS_VALIDOS.includes(tratado.nivel_cliente)) {
                 this.registrarErro(linha, "Nível", "Dado fora do padrão", `Nível "${tratado.nivel_cliente}" inválido. Use A, B ou C.`)
             }
 
-            // 5. Dado fora do padrão: data deve estar em DD/MM/AAAA
+            // dado fora do padrão: data deve estar em DD/MM/AAAA
             if (tratado.data_contratacao && !REGEX_DATA.test(tratado.data_contratacao)) {
                 this.registrarErro(linha, "Data Contratação", "Dado fora do padrão", `Data "${tratado.data_contratacao}" deve estar no formato DD/MM/AAAA.`)
             }
 
-            // 6. Texto que precisa ser padronizado (tudo maiúsculo ou tudo minúsculo)
+            // texto que precisa ser padronizado (tudo maiúsculo ou tudo minúsculo)
             ;["nome_cliente", "cidade"].forEach((chave) => {
                 const texto = tratado[chave]
                 if (texto.length > 1 && (texto === texto.toUpperCase() || texto === texto.toLowerCase())) {
@@ -250,7 +250,7 @@ export const useUploadStore = defineStore("upload", {
             })
         },
 
-        // 7. Registros duplicados (mesmo código de cliente)
+        // registros duplicados (mesmo código de cliente)
         verificarDuplicados() {
             const codigosVistos = {}
 
