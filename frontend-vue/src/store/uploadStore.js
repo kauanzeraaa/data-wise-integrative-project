@@ -15,12 +15,37 @@ const NIVEIS_VALIDOS = ["A", "B", "C"]
 const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const REGEX_DATA = /^\d{2}\/\d{2}\/\d{4}$/
 
+// Padroniza o nome de uma coluna: "Código Cliente" -> "codigo_cliente"
+function normalizarTexto(texto) {
+    return String(texto ?? "")
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // remove acentos
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "_")
+}
+
+// Nomes de coluna aceitos para cada campo (a chave ou o rótulo do campo)
+// ex.: "nome_cliente" ou "Nome" -> nome_cliente | "E-mail" -> email
+const ALIASES_COLUNAS = {}
+CAMPOS.forEach((campo) => {
+    ALIASES_COLUNAS[normalizarTexto(campo.chave)] = campo.chave
+    ALIASES_COLUNAS[normalizarTexto(campo.rotulo)] = campo.chave
+})
+
+// Erro de conteúdo da planilha (mensagem pode ser exibida diretamente ao usuário)
+class ErroValidacaoPlanilha extends Error {}
+
 export function formatarTamanho(bytes) {
     if (!bytes) return "0 KB"
     const mb = bytes / (1024 * 1024)
     if (mb >= 1) return mb.toFixed(1).replace(".", ",") + " MB"
     const kb = bytes / 1024
     return kb.toFixed(1).replace(".", ",") + " KB"
+}
+
+export function formatarDataHora(data) {
+    if (!data) return ""
+    return new Date(data).toLocaleString("pt-BR")
 }
 
 // Pequena pausa só para a barra de progresso ficar visível
@@ -93,28 +118,45 @@ export const useUploadStore = defineStore("upload", {
             // Adiciona o arquivo no histórico de cards
             const extensao = file.name.includes(".") ? file.name.split(".").pop().toUpperCase() : "CSV"
             this.historicoArquivos.unshift({
-                id: Date.now(),
+                id: `${this.dataUpload.getTime()}-${Math.random().toString(36).slice(2, 8)}`,
                 nome: file.name.replace(/\.[^/.]+$/, ""),
                 extensao: extensao,
                 tamanhoBytes: file.size,
                 status: "Carregando",
-                progresso: 0
+                progresso: 0,
+                dataUpload: this.dataUpload, // data/hora em que ESTE arquivo foi enviado
+                mensagemErro: "",
             })
             // Mantém apenas os 2 últimos arquivos visualmente
             if (this.historicoArquivos.length > 2) {
                 this.historicoArquivos.pop()
             }
+            // Retorna o card (reativo) do arquivo atual
+            return this.historicoArquivos[0]
         },
 
-        validarArquivo() {
+        // Marca o upload como erro e exibe a mensagem
+        marcarErro(item, mensagem) {
+            this.mensagemErro = mensagem
+            this.dadosOriginais = []
+            this.dadosTratados = []
+            this.erros = []
+            if (item) {
+                item.status = "Erro"
+                item.mensagemErro = mensagem
+            }
+        },
+
+        validarArquivo(item) {
             const nome = this.nomeArquivo.toLowerCase()
             const formatoValido = nome.endsWith(".xlsx") || nome.endsWith(".xls") || nome.endsWith(".csv")
 
             if (!formatoValido) {
-                this.mensagemErro = "Formato inválido. Envie um arquivo .xlsx, .xls ou .csv."
-                if (this.historicoArquivos.length > 0) {
-                    this.historicoArquivos[0].status = "Erro"
-                }
+                this.marcarErro(item, "Formato inválido. Envie um arquivo .xlsx, .xls ou .csv.")
+                return false
+            }
+            if (!this.arquivo || this.arquivo.size === 0) {
+                this.marcarErro(item, "O arquivo está vazio.")
                 return false
             }
             return true
@@ -122,62 +164,101 @@ export const useUploadStore = defineStore("upload", {
 
         // valida o arquivo, lê, trata e valida os dados
         async processarPlanilha(file) {
-            this.selecionarArquivo(file)
-            if (!this.validarArquivo()) return
+            const item = this.selecionarArquivo(file)
+            if (!this.validarArquivo(item)) return
 
             this.carregando = true
             try {
                 this.progresso = 20
-                this.historicoArquivos[0].progresso = 20
+                item.progresso = 20
                 const linhas = await this.lerPlanilha()
                 await esperar(300)
 
                 this.progresso = 50
-                this.historicoArquivos[0].progresso = 50
+                item.progresso = 50
                 this.dadosOriginais = linhas
                 this.dadosTratados = linhas.map((linha) => this.tratarLinha(linha))
                 await esperar(300)
 
                 this.progresso = 80
-                this.historicoArquivos[0].progresso = 80
+                item.progresso = 80
                 this.validarDados()
                 await esperar(300)
 
                 this.progresso = 100
-                this.historicoArquivos[0].progresso = 100
-                this.historicoArquivos[0].status = "Completo"
+                item.progresso = 100
+                item.status = "Completo"
             } catch (error) {
-                this.mensagemErro = "Não foi possível ler a planilha."
-                this.historicoArquivos[0].status = "Erro"
+                const mensagem = error instanceof ErroValidacaoPlanilha
+                    ? error.message
+                    : "Não foi possível ler a planilha. Verifique se o arquivo não está corrompido."
+                this.marcarErro(item, mensagem)
             } finally {
                 this.carregando = false
             }
         },
 
-        // le a primeira aba da planilha e transforma em lista de objetos
+        // le a primeira aba da planilha, valida a estrutura e transforma em lista de objetos
         async lerPlanilha() {
             const buffer = await this.arquivo.arrayBuffer()
             // datas do excel viram texto DD/MM/AAAA (dateNF), CSV é lido como texto normal (raw: true)
             const workbook = XLSX.read(buffer, { type: "array", dateNF: "dd/mm/yyyy", raw: true })
-            const planilha = workbook.Sheets[workbook.SheetNames[0]]
+
+            const nomeAba = workbook.SheetNames[0]
+            const planilha = nomeAba ? workbook.Sheets[nomeAba] : null
+            if (!planilha || !planilha["!ref"]) {
+                throw new ErroValidacaoPlanilha("A planilha está vazia. Nenhum dado foi encontrado no arquivo.")
+            }
+
+            // Lê como matriz para obter o cabeçalho mesmo que não existam linhas de dados
+            const matriz = XLSX.utils.sheet_to_json(planilha, { header: 1, defval: "", raw: false, blankrows: false })
+            const cabecalho = (matriz[0] || []).map((coluna) => String(coluna).trim())
+            if (matriz.length === 0 || cabecalho.every((coluna) => coluna === "")) {
+                throw new ErroValidacaoPlanilha("A planilha está vazia. Nenhum dado foi encontrado no arquivo.")
+            }
+
+            // Verifica se todas as colunas obrigatórias existem (aceita a chave ou o rótulo)
+            const colunasEncontradas = new Set(cabecalho.map((coluna) => this.normalizarNomeColuna(coluna)))
+            const faltando = CAMPOS.filter((campo) => campo.obrigatorio && !colunasEncontradas.has(campo.chave))
+            if (faltando.length > 0) {
+                const nomes = faltando.map((campo) => `"${campo.rotulo}"`).join(", ")
+                throw new ErroValidacaoPlanilha(
+                    `Colunas obrigatórias ausentes ou com nome incorreto: ${nomes}. ` +
+                    `Colunas esperadas: ${CAMPOS.filter((c) => c.obrigatorio).map((c) => c.rotulo).join(", ")}.`
+                )
+            }
+
+            if (matriz.length < 2) {
+                throw new ErroValidacaoPlanilha("A planilha possui apenas o cabeçalho, sem nenhum registro de cliente.")
+            }
+
             const linhas = XLSX.utils.sheet_to_json(planilha, { defval: "", raw: false })
 
             // Padroniza os nomes das colunas: "Código Cliente" - "codigo_cliente"
-            return linhas.map((linha) => {
+            const normalizadas = linhas.map((linha) => {
                 const nova = {}
                 Object.keys(linha).forEach((coluna) => {
                     nova[this.normalizarNomeColuna(coluna)] = linha[coluna]
                 })
                 return nova
             })
+
+            // Garante que exista pelo menos um registro com dados de cliente preenchidos
+            const obrigatorios = CAMPOS.filter((campo) => campo.obrigatorio)
+            const temDadosDeCliente = normalizadas.some((linha) =>
+                obrigatorios.some((campo) => String(linha[campo.chave] ?? "").trim() !== "")
+            )
+            if (!temDadosDeCliente) {
+                throw new ErroValidacaoPlanilha("O arquivo não contém dados de clientes: todas as linhas estão vazias.")
+            }
+
+            return normalizadas
         },
 
+        // Converte o nome da coluna para a chave do campo (ou apenas padroniza se for desconhecida)
         normalizarNomeColuna(coluna) {
-            return coluna
-                .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // remove acentos
-                .trim()
-                .toLowerCase()
-                .replace(/\s+/g, "_")
+            const normalizada = normalizarTexto(coluna)
+            return ALIASES_COLUNAS[normalizada] || normalizada
         },
 
         // Remove espaços extras e padroniza alguns campos
