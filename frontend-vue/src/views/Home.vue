@@ -1,6 +1,32 @@
 <script setup>
 import router from '../router'
 import Header from '../components/Header.vue'
+import Footer from '../components/Footer.vue'
+
+const features = [
+  {
+    title: 'Geração Automática de Gráficos',
+    description: 'Identificamos e sugerimos os melhores gráficos (coluna, pizza, dispersão) para cada conjunto de dados.',
+    // Ícone: sparkles
+    icon: [
+      'M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z',
+      'M20 3v4',
+      'M22 5h-4',
+    ],
+  },
+  {
+    title: 'Filtros & Ordenação Dinâmicos',
+    description: 'Segmente seus dados por data, região ou categoria com um clique diretamente no dashboard gerado.',
+    // Ícone: filter
+    icon: ['M22 3H2l8 9.46V19l4 2v-8.54L22 3z'],
+  },
+  {
+    title: 'Exportação em PDF/PNG',
+    description: 'Gere relatórios elegantes e prontos para apresentações em PDF de alta qualidade ou imagens PNG.',
+    // Ícone: download
+    icon: ['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'M7 10l5 5 5-5', 'M12 15V3'],
+  },
+]
 </script>
 
 <template>
@@ -153,7 +179,43 @@ import Header from '../components/Header.vue'
 
     </section>
 
-    <!-- As próximas sections entrarão aqui embaixo -->
+    <!-- Section: Funcionalidades -->
+    <section id="funcionalidades" aria-labelledby="features-title"
+      class="flex flex-col items-center px-8 md:px-[400px] py-16 lg:py-24 bg-white">
+
+      <header class="flex flex-col items-center text-center mb-12 lg:mb-16">
+        <p class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-[#4f9474] mb-4">
+          <span class="w-2 h-2 rounded-[2px] bg-[#4f9474]" aria-hidden="true"></span>
+          Funcionalidades
+        </p>
+        <h2 id="features-title" class="text-3xl md:text-4xl font-extrabold text-palette-chumbo leading-tight mb-5">
+          Tudo o que você precisa para analisar dados sem complicação
+        </h2>
+        <p class="text-sm md:text-base text-palette-gray max-w-2xl leading-relaxed">
+          Construído especialmente para gestores, analistas de negócios e profissionais
+          que não querem depender de TI para criar relatórios.
+        </p>
+      </header>
+
+      <ul class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+        <li v-for="feature in features" :key="feature.title">
+          <article
+            class="h-full p-4 bg-white border border-gray-200 rounded-xl hover:shadow-[0_10px_30px_rgba(38,53,31,0.09)] transition-shadow duration-300">
+            <span class="flex items-center justify-center w-7 h-7 rounded-md bg-[#4f9474] text-white mb-5"
+              aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+                <path v-for="(d, i) in feature.icon" :key="i" :d="d" />
+              </svg>
+            </span>
+            <h3 class="text-base font-bold text-palette-chumbo mb-2">{{ feature.title }}</h3>
+            <p class="text-sm text-palette-gray leading-relaxed">{{ feature.description }}</p>
+          </article>
+        </li>
+      </ul>
+    </section>
 
   </main>
+
+  <Footer />
 </template>
