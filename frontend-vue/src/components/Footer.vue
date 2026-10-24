@@ -64,18 +64,13 @@ const companyLinks = [
         <h2 id="footer-social" class="text-sm font-bold text-palette-chumbo mb-5">Siga-me</h2>
         <ul class="flex gap-3">
           <li>
-            <a href="https://www.linkedin.com/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"
-              class="flex items-center justify-center w-9 h-9 rounded-lg bg-[#2f3b45] text-white hover:bg-palette-mid-green transition-colors duration-300">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true">
-                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-                <rect x="2" y="9" width="4" height="12" />
-                <circle cx="4" cy="4" r="2" />
-              </svg>
+            <a href="https://www.linkedin.com/in/kauanmpiacente/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"
+              class="block rounded-lg hover:opacity-80 transition-opacity duration-300">
+              <img src="../assets/home/linkedin-icon.png" alt="" aria-hidden="true" class="w-9 h-9">
             </a>
           </li>
           <li>
-            <a href="https://github.com/" target="_blank" rel="noopener noreferrer" aria-label="GitHub"
+            <a href="https://github.com/kauanzeraaa" target="_blank" rel="noopener noreferrer" aria-label="GitHub"
               class="flex items-center justify-center w-9 h-9 rounded-lg bg-[#2f3b45] text-white hover:bg-palette-mid-green transition-colors duration-300">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true">
