@@ -25,14 +25,6 @@
       </RouterLink>
 
       <RouterLink
-      to="/how-works"
-        class="hover:text-palette-mid-green transition-colors pb-1"
-        exact-active-class="border-b-2 border-palette-mid-green text-palette-mid-green"
-      >
-        Como Funciona
-      </RouterLink>
-
-      <RouterLink
         to="/contact"
         class="hover:text-palette-mid-green transition-colors pb-1"
         exact-active-class="border-b-2 border-palette-mid-green text-palette-mid-green"
