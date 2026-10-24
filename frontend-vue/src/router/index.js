@@ -18,9 +18,22 @@ const routes = [
     { path : '/relatorio', component: Relatorio}
 ]
 
+const HEADER_HEIGHT = 72 // altura do header fixo (h-18)
+
 const router = createRouter({
     history: createWebHistory(),
-    routes
+    routes,
+    scrollBehavior(to, from, savedPosition) {
+        // Voltar/avançar do navegador: restaura a posição anterior
+        if (savedPosition) return savedPosition
+
+        // Links com âncora (ex.: /#funcionalidades): rola até a section
+        if (to.hash) {
+            return { el: to.hash, top: HEADER_HEIGHT, behavior: 'smooth' }
+        }
+
+        return { top: 0 }
+    }
 })
 
 export default router
