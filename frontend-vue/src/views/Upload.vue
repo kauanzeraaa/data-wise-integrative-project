@@ -1,5 +1,5 @@
 <script setup>
-import Header from "../components/Header.vue";
+import AppHeader from "../components/AppHeader.vue";
 import uploadIcon from "../assets/upload_images/upload_icon.png";
 import { ref } from "vue";
 import { useUploadStore, formatarTamanho, formatarDataHora } from "../store/uploadStore.js";
@@ -21,7 +21,7 @@ async function aoSelecionaArquivo(event) {
 </script>
 
 <template>
-    <Header />
+    <AppHeader />
 
     <main class="bg-[#f8fafc] min-h-screen md:px-[400px] pb-10">
         <!-- Section para importar arquivos -->
