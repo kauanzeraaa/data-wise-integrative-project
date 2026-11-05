@@ -20,7 +20,7 @@ async function enviar() {
   }
 
   const sucesso = await auth.login(email.value.trim(), senha.value)
-  if (sucesso) router.push('/uploads')
+  if (sucesso) router.push('/dashboard')
 }
 </script>
 

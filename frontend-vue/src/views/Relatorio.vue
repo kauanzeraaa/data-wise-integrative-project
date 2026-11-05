@@ -1,12 +1,12 @@
 <script setup>
-import Header from "../components/Header.vue";
+import AppHeader from "../components/AppHeader.vue";
 import { useUploadStore } from "../store/uploadStore.js";
 
 const upload = useUploadStore();
 </script>
 
 <template>
-    <Header />
+    <AppHeader />
 
     <main class="bg-[#f8fafc] min-h-screen px-6 py-12 md:px-[400px]">
         

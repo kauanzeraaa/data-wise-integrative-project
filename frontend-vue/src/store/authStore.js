@@ -3,6 +3,10 @@ import { defineStore } from "pinia"
 // URL base da API (defina VITE_API_URL no arquivo .env quando o backend estiver pronto)
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
 
+// MODO TEMPORÁRIO SEM BACKEND: libera o acesso ao sistema sem login.
+// Quando o backend estiver pronto, mude para false (ou defina VITE_MODO_SEM_BACKEND=false no .env).
+export const MODO_SEM_BACKEND = import.meta.env.VITE_MODO_SEM_BACKEND !== "false"
+
 export const useAuthStore = defineStore("auth", {
     state: () => ({
         token: localStorage.getItem("token") || null,
@@ -20,6 +24,16 @@ export const useAuthStore = defineStore("auth", {
         async login(email, senha) {
             this.carregando = true
             this.erro = ""
+
+            // Sem backend: aceita qualquer credencial e cria um usuário local
+            if (MODO_SEM_BACKEND) {
+                this.token = "token-local"
+                this.usuario = { nome: email.split("@")[0], email }
+                localStorage.setItem("token", this.token)
+                localStorage.setItem("usuario", JSON.stringify(this.usuario))
+                this.carregando = false
+                return true
+            }
 
             try {
                 const resposta = await fetch(`${API_URL}/auth/login`, {
