@@ -3,23 +3,19 @@ package com.senai.backend_java.models;
 import java.math.BigDecimal;         // biblioteca do JPA para mapear a coluna da tabela do banco de dados
 import java.time.LocalDate;         // biblioteca do JPA para mapear a classe como uma entidade do banco de dados
 
-import org.hibernate.annotations.Check;
-
 import jakarta.persistence.Column;
-import jakarta.persistence.Entity; // biblioteca do JPA para mapear a geração de valores da chave primária
-import jakarta.persistence.EnumType; // biblioteca do JPA para mapear a estratégia de geração de valores da chave primária
-import jakarta.persistence.Enumerated;             // biblioteca do JPA para mapear a chave primária da entidade
-import jakarta.persistence.GeneratedValue;     // biblioteca do JPA para mapear a coluna que representa a chave estrangeira na tabela do banco de dados
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;          // biblioteca do JPA para mapear a tabela do banco de dados
-import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType; // biblioteca do JPA para mapear a geração de valores da chave primária
+import jakarta.persistence.Enumerated; // biblioteca do JPA para mapear a estratégia de geração de valores da chave primária
+import jakarta.persistence.GeneratedValue;             // biblioteca do JPA para mapear a chave primária da entidade
+import jakarta.persistence.GenerationType;     // biblioteca do JPA para mapear a coluna que representa a chave estrangeira na tabela do banco de dados
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;          // biblioteca do JPA para mapear a tabela do banco de dados
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity 
 @Table (name = "contrato")
-@Check (constraints = "data_fim IS NULL OR data_fim < data_inicio")
-@Check (constraints = "valor >= 0")
 public class Contrato {
   @Id 
   @GeneratedValue (strategy = GenerationType.IDENTITY)

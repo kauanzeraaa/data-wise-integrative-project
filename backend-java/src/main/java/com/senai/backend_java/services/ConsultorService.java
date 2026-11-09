@@ -2,8 +2,6 @@ package com.senai.backend_java.services;
 
 import java.util.List;
 
-import javax.management.RuntimeErrorException;
-
 import org.springframework.stereotype.Service;
 
 import com.senai.backend_java.models.Consultor;

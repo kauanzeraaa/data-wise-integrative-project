@@ -1,15 +1,15 @@
 package com.senai.backend_java.models;
 
-import jakarta.persistence.Column;         // biblioteca do JPA para mapear a coluna da tabela do banco de dados
-import jakarta.persistence.Entity;         // biblioteca do JPA para mapear a classe como uma entidade do banco de dados
-import jakarta.persistence.GeneratedValue; // biblioteca do JPA para mapear a geração de valores da chave primária
-import jakarta.persistence.GenerationType; // biblioteca do JPA para mapear a estratégia de geração de valores da chave primária
-import jakarta.persistence.Id;             // biblioteca do JPA para mapear a chave primária da entidade
-import jakarta.persistence.JoinColumn;     // biblioteca do JPA para mapear a coluna que representa a chave estrangeira na tabela do banco de dados
+import java.util.ArrayList;         // biblioteca do JPA para mapear a coluna da tabela do banco de dados
+import java.util.List;         // biblioteca do JPA para mapear a classe como uma entidade do banco de dados
+
+import jakarta.persistence.Column; // biblioteca do JPA para mapear a geração de valores da chave primária
+import jakarta.persistence.Entity; // biblioteca do JPA para mapear a estratégia de geração de valores da chave primária
+import jakarta.persistence.GeneratedValue;             // biblioteca do JPA para mapear a chave primária da entidade
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;          // biblioteca do JPA para mapear a tabela do banco de dados
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;          // biblioteca do JPA para mapear a tabela do banco de dados
-import java.util.ArrayList;
-import java.util.List;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "servico")
