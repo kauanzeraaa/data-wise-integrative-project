@@ -33,7 +33,8 @@ public class SecurityConfig {
                 .accessDeniedHandler((req, res, erro) -> res.sendError(HttpServletResponse.SC_FORBIDDEN)))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.POST, "/api/auth/cadastro", "/api/auth/login").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/publico").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/publico", "/api/public").permitAll()
+                .requestMatchers("/error").permitAll()
                 .requestMatchers(HttpMethod.DELETE, "/api/clientes/**").hasRole("ADMIN")
                 .anyRequest().authenticated())
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
