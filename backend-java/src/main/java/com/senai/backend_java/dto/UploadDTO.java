@@ -7,7 +7,7 @@ public final class UploadDTO {
         // Construtor privado para evitar instanciação
     }
 
-    public record EnvioValidadasRequest(String arquivoNome, Integer descartadas, List<String> erros) {}
+    public record EnvioValidadasRequest(String arquivoNome, Integer descartadas, List<LinhaEnvio> linhas) {}
 
     public record LinhaEnvio(Integer numeroLinha, String codigoCliente, String nomeCliente, String consultor,
         String segmento, String nivelCliente, String faturamentoAnual, String servicosContratados, String dataContratacao,
