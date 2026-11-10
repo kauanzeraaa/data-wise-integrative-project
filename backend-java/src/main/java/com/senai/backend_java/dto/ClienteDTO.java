@@ -1,6 +1,8 @@
 package com.senai.backend_java.dto;
 
 import java.time.LocalDate; // usado para representar data sem hora
+import java.util.Map;
+
 import jakarta.validation.constraints.NotBlank; // valida texto obrigatório
 import jakarta.validation.constraints.NotNull; // valida valor obrigatório
 import jakarta.validation.constraints.Pattern; // valida formato do texto
@@ -37,6 +39,10 @@ public record ClienteDTO(
     String cidade,
 
     @Pattern(regexp = "^$|^[A-Za-z]{2}$", message = "A UF deve possuir apenas duas letras")
-    String uf
+    String uf,
+
+    Map<String, String> campos,
+
+    int numero
 ) {
 }
