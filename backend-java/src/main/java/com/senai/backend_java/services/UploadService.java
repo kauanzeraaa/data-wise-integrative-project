@@ -1,7 +1,20 @@
 package com.senai.backend_java.services;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import static com.senai.backend_java.services.Colunas.*;
+
+import com.senai.backend_java.config.ApiException;
 import com.senai.backend_java.config.AppProperties;
+import com.senai.backend_java.dto.ClienteDTO;
+import com.senai.backend_java.dto.UploadDTO.EnvioValidadasRequest;
+import com.senai.backend_java.dto.UploadDTO.LinhaEnvio;
+import com.senai.backend_java.services.ClienteValidacaoService.ResultadoLinha;
 
 @Service                                                                            // serviço do Spring
 public class UploadService {                                                        // REGRA DO UPLOAD: valida e ENCAMINHA ao Python (o Java não grava nada)
