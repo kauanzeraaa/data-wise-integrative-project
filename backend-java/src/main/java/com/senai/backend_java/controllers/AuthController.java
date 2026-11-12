@@ -1,12 +1,15 @@
 package com.senai.backend_java.controllers;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import jakarta.validation.Valid;
 import java.security.Principal;
 import java.util.Map;
-import org.springframework.web.bind.annotation.*;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.senai.backend_java.dto.CadastroRequest;
@@ -14,16 +17,18 @@ import com.senai.backend_java.dto.LoginRequest;
 import com.senai.backend_java.dto.LoginResponse;
 import com.senai.backend_java.dto.UsuarioResponse;
 import com.senai.backend_java.models.Usuario;
-import com.senai.backend_java.repositories.UserRepository;
+import com.senai.backend_java.repositories.UsuarioRepository;
 import com.senai.backend_java.services.AuthService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api")
 public class AuthController {
   private final AuthService service;
-  private final UserRepository repository;
+  private final UsuarioRepository repository;
 
-  public AuthController(AuthService service, UserRepository repository){
+  public AuthController(AuthService service, UsuarioRepository repository){
     this.service = service;
     this.repository = repository;
   }
