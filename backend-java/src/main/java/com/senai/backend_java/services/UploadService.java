@@ -11,7 +11,6 @@ import static com.senai.backend_java.services.Colunas.*;
 
 import com.senai.backend_java.config.ApiException;
 import com.senai.backend_java.config.AppProperties;
-import com.senai.backend_java.dto.ClienteDTO;
 import com.senai.backend_java.dto.UploadDTO.EnvioValidadasRequest;
 import com.senai.backend_java.dto.UploadDTO.LinhaEnvio;
 import com.senai.backend_java.services.ClienteValidacaoService.ResultadoLinha;
@@ -37,36 +36,21 @@ public class UploadService {                                                    
         if (req == null || req.linhas() == null || req.linhas().isEmpty()) {        // sem linhas?
             throw new ApiException(HttpStatus.BAD_REQUEST, "Não há linhas validadas para enviar.");  // erro 400
         }                                                                           // fecha o bloco
-        if (req.linhas().size() > props.upload().maxLinhas()) {                     // mais linhas que o limite?
+        int maxLinhas = props.upload() == null || props.upload().maxLinhas() <= 0   // limite não configurado?
+                ? 5000 : props.upload().maxLinhas();                                // usa 5000 como padrão (evita NullPointerException)
+        if (req.linhas().size() > maxLinhas) {                                      // mais linhas que o limite?
             throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY,                 // erro 422
-                    "A planilha passou do limite de " + props.upload().maxLinhas() + " linhas.");  // (continuação da mensagem)
+                    "A planilha passou do limite de " + maxLinhas + " linhas.");
         }                                                                           // fecha o bloco
         String nome = nomeSeguro(req.arquivoNome());                                // nome do arquivo sem caracteres perigosos
         int descartadas = req.descartadas() == null ? 0 : Math.max(0, req.descartadas());  // quantas linhas o front deixou de fora (nunca negativo)
 
-        List<ClienteDTO> brutas = new ArrayList<>(req.linhas().size());             // lista onde vamos colocar as linhas no formato do validador
-        int posicao = 2; // a linha 1 da planilha é o cabeçalho
-        for (LinhaEnvio e : req.linhas()) {                                         // para cada linha recebida
-            Map<String, String> campos = new LinkedHashMap<>();                     // mapa coluna -> texto
-            campos.put(CODIGO, e.codigoCliente());                                  // código do cliente
-            campos.put(NOME, e.nomeCliente());                                      // nome do cliente
-            campos.put(CONSULTOR, e.consultor());                                   // consultor
-            campos.put(SEGMENTO, e.segmento());                                     // segmento
-            campos.put(NIVEL, e.nivelCliente());                                    // nível
-            campos.put(FATURAMENTO, e.faturamentoAnual());                          // faturamento
-            campos.put(SERVICOS, e.servicosContratados());                          // serviços
-            campos.put(DATA, e.dataContratacao());                                  // data
-            campos.put(CIDADE, e.cidade());                                         // cidade
-            campos.put(UF, e.uf());                                                 // uf
-            int numero = e.numeroLinha() == null ? posicao : e.numeroLinha();       // usa o número da linha enviado (ou calcula)
-            brutas.add(new ClienteDTO(numero, campos));                             // guarda a linha na lista
-            posicao++;                                                              // próxima posição
-        }                                                                           // fecha o bloco
-        return registrar(nome, brutas, descartadas);                       // validar de novo e enviar ao Python (o Python grava)
+
+        return registrar(nome, req.linhas(), descartadas);                          // valida de novo e envia ao Python (o validador já entende LinhaEnvio)
     }                                                                               // fecha o bloco
 
     /** Valida de novo e ENCAMINHA as linhas válidas ao Python. Linhas com erro só voltam na resposta ("rejeitadas"). */
-    private Map<String, Object> registrar(String nome, List<ClienteDTO> brutas, int descartadas) {  // registrar: valida de novo e envia
+    private Map<String, Object> registrar(String nome, List<LinhaEnvio> brutas, int descartadas) {  // registrar: valida de novo e envia
         List<ResultadoLinha> resultado = validacao.validar(brutas);                 // VALIDAÇÃO NO BACKEND: roda as regras em cada linha
 
         List<Map<String, Object>> validas = new ArrayList<>();                      // linhas válidas: são as que vão ao Python
