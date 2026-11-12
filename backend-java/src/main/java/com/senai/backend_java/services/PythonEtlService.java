@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import com.senai.backend_java.config.ApiException;
 import com.senai.backend_java.config.AppProperties;
 
+import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
 @Component                                                                           // componente do Spring
@@ -53,7 +54,7 @@ public class PythonEtlService {                                                 
                     .header("Content-Type", "application/json; charset=utf-8")      // avisa que o corpo é JSON
                     .POST(HttpRequest.BodyPublishers.ofByteArray(json.writeValueAsBytes(pedido)));  // POST com o JSON no corpo
             chamar(req);                                                            // envia e espera o Python gravar (ele só responde ok)
-        } catch (IOException e) {                                                   // não conseguiu montar o JSON
+        } catch (JacksonException e) {                                              // não conseguiu montar o JSON (Jackson 3 lança exceção NÃO checada)
             throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao montar o JSON: " + e.getMessage());  // erro 500
         }                                                                           // fecha o bloco
     }                                                                               // fecha o bloco
