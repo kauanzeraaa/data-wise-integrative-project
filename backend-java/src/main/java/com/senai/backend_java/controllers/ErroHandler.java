@@ -1,31 +1,49 @@
 package com.senai.backend_java.controllers;
 
-import java.util.Map; // usado para montar resposta simples em JSON
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-import org.springframework.http.ResponseEntity; // permite definir status HTTP
-import org.springframework.web.bind.MethodArgumentNotValidException; // erro de @Valid
-import org.springframework.web.bind.annotation.ExceptionHandler; // captura exceções
-import org.springframework.web.bind.annotation.RestControllerAdvice; // tratamento global de erro
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.senai.backend_java.config.ApiException;
+
+/**
+ * Tratamento GLOBAL de erros: converte exceções em respostas JSON padronizadas,
+ * evitando que o front receba um 500 genérico com stack trace.
+ */
 @RestControllerAdvice
 public class ErroHandler {
-    
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> tratarErroDto(MethodArgumentNotValidException e){
-        var erro = e.getBindingResult().getFieldErrors().get(0);
 
-        return ResponseEntity.badRequest().body(Map.of( // devolve HTTP 400
-            "mensagem", "Dados inválidos", // mensagem geral
-            "campo", erro.getField(), // campo que falhou
-            "erro", erro.getDefaultMessage() // texto definido no DTO
-        ));
+    /** Falha do @Valid em um DTO -> HTTP 400 com o primeiro campo inválido. */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> tratarErroDto(MethodArgumentNotValidException e) {
+        Map<String, String> corpo = new LinkedHashMap<>();   // Map.of() não aceita null; LinkedHashMap aceita e mantém a ordem
+        corpo.put("mensagem", "Dados inválidos");
+        var erro = e.getBindingResult().getFieldError();      // null quando o erro não é de um campo (ex.: validação da classe toda)
+        if (erro != null) {
+            corpo.put("campo", erro.getField());
+            corpo.put("erro", erro.getDefaultMessage());
+        }
+        return ResponseEntity.badRequest().body(corpo);
     }
 
-    @ExceptionHandler(IllegalArgumentException.class) // captura erro lançado pelo Service
-    public ResponseEntity<Map<String, String>> tratarRegraNegocio(IllegalArgumentException e) { // método do erro
-        return ResponseEntity.badRequest().body(Map.of( // devolve HTTP 400
-            "mensagem", "Regra de validação não atendida", // mensagem geral
-            "erro", e.getMessage() // mensagem específica, exemplo: código repetido
-        )); // fim do body
-    } // fim do método
+    /** Regra de negócio violada (lançada nos services) -> HTTP 400. */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, String>> tratarRegraNegocio(IllegalArgumentException e) {
+        Map<String, String> corpo = new LinkedHashMap<>();
+        corpo.put("mensagem", "Regra de validação não atendida");
+        corpo.put("erro", e.getMessage());                   // ex.: "Linha 3: codigo_cliente: código duplicado"
+        return ResponseEntity.badRequest().body(corpo);
+    }
+
+    /** Erros "nossos" (ApiException) -> usa o status HTTP que o service escolheu (401, 404, 422, 503...). */
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<Map<String, String>> tratarApiException(ApiException e) {
+        Map<String, String> corpo = new LinkedHashMap<>();
+        corpo.put("mensagem", e.getMessage());
+        return ResponseEntity.status(e.getStatus()).body(corpo);
+    }
 }
