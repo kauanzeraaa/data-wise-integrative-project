@@ -1,13 +1,17 @@
 package com.senai.backend_java.dto;
 
 import java.time.LocalDate; // usado para representar data sem hora
-import java.util.Map;
 
 import jakarta.validation.constraints.NotBlank; // valida texto obrigatório
 import jakarta.validation.constraints.NotNull; // valida valor obrigatório
 import jakarta.validation.constraints.Pattern; // valida formato do texto
 import jakarta.validation.constraints.Positive; // valida número maior que zero
 
+/**
+ * Cliente já tipado e validado (entrada/saída de POST /api/clientes/validar).
+ * As anotações são checadas pelo @Valid do controller ANTES de chegar no service.
+ * Para a linha crua da planilha (tudo texto), use LinhaPlanilha.
+ */
 public record ClienteDTO(
 
     @NotBlank (message = "O código do cliente é obrigatório")
@@ -39,10 +43,6 @@ public record ClienteDTO(
     String cidade,
 
     @Pattern(regexp = "^$|^[A-Za-z]{2}$", message = "A UF deve possuir apenas duas letras")
-    String uf,
-
-    Map<String, String> campos,
-
-    int numero
+    String uf
 ) {
 }
