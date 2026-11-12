@@ -49,5 +49,22 @@ public class Usuario {
     public Profile getPerfil() { return profile; }
     public void setPerfil(Profile profile) { this.profile = profile; }
 
+    public String getMatricula() { return matricula; }
+    public void setMatricula(String matricula) { this.matricula = matricula; }
+    public String getTurma() { return turma; }
+    public void setTurma(String turma) { this.turma = turma; }
+    public StatusUsuario getStatus() { return status; }                       // usado na tela de liberação de acesso
+    public void setStatus(StatusUsuario status) { this.status = status; }
+    public LocalDateTime getCriadoEm() { return criadoEm; }
+
+    /**
+     * Executado pelo JPA logo antes do INSERT.
+     * Sem isso, "criado_em" (nullable = false) ficaria nulo e o cadastro falharia no banco.
+     */
+    @PrePersist
+    void aoCriar() {
+        if (criadoEm == null) criadoEm = LocalDateTime.now();
+    }
+
     public boolean isAdmin() { return profile == Profile.ADMIN; }             // atalho: true se o perfil é ADMIN
 }
