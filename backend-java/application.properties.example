@@ -15,6 +15,20 @@ spring.jpa.properties.hibernate.format_sql=true
 server.port=8080
 spring.web.error.include-message=always
 
-# JWT Configuracoes (Minimo de 256 bits codificado em Base64 para HS256)
-app.jwt.secret-base64=${JWT_SECRET_BASE64:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+# JWT: chave em BASE64 com no minimo 32 bytes aleatorios (gere com: openssl rand -base64 32)
+# NUNCA use a chave de exemplo em producao; defina a variavel de ambiente JWT_SECRET.
+app.jwt.secret=${JWT_SECRET:QGNjUmZVallYbjJyNXU4eC9BP0QoRytLYlBkU2dWa1k=}
 app.jwt.expiration-minutes=60
+
+# Administrador inicial (criado ja APROVADO na primeira subida, se o e-mail nao existir)
+app.admin.nome=Administrador
+app.admin.email=${ADMIN_EMAIL:admin@datawise.local}
+app.admin.senha=${ADMIN_SENHA:troque-esta-senha1}
+
+# Upload: maximo de linhas aceitas por envio (AppProperties.upload.maxLinhas)
+app.upload.max-linhas=5000
+
+# ETL em Python (FastAPI): endereco do POST /etl e chave compartilhada (vazia = sem chave)
+app.etl.url=${ETL_URL:http://localhost:8000/etl}
+app.etl.key=${ETL_KEY:}
+
